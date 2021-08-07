@@ -12,19 +12,20 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
-public class MediaCodecPlayer implements MediaTimeProvider {
+public class MediaCodecPlayer implements MediaTimeProvider
+{
     private static final String TAG = MediaCodecPlayer.class.getSimpleName();
 
-    private static final int STATE_IDLE = 1;
-    private static final int STATE_PREPARING = 2;
-    private static final int STATE_PLAYING = 3;
-    private static final int STATE_PAUSED = 4;
+    protected static final int STATE_IDLE = 1;
+    protected static final int STATE_PREPARING = 2;
+    protected static final int STATE_PLAYING = 3;
+    protected static final int STATE_PAUSED = 4;
 
     private Boolean mThreadStarted = false;
     private CodecState mAudioTrackState;
     private int mMediaFormatHeight;
     private int mMediaFormatWidth;
-    private Integer mState;
+    protected Integer mState;
     private long mDeltaTimeUs;
     private long mDurationUs;
     private Map<Integer, CodecState> mAudioCodecStates;
@@ -42,14 +43,17 @@ public class MediaCodecPlayer implements MediaTimeProvider {
     /*
      * Media player class to playback video using MediaCodec.
      */
-    public MediaCodecPlayer(SurfaceHolder holder, Context context) {
+    public MediaCodecPlayer(SurfaceHolder holder, Context context)
+    {
         mSurfaceHolder = holder;
         mFrameReleaseTimeHelper = new VideoFrameReleaseTimeHelper(context);
         mAudioTrackState = null;
         mState = STATE_IDLE;
-        mThread = new Thread(new Runnable() {
+        mThread = new Thread(new Runnable()
+        {
             @Override
-            public void run() {
+            public void run()
+            {
                 while (true) {
                     synchronized (mThreadStarted) {
                         if (mThreadStarted == false) {
@@ -74,18 +78,21 @@ public class MediaCodecPlayer implements MediaTimeProvider {
         });
     }
 
-    public void setAudioDataSource(Uri uri, Map<String, String> headers) {
+    public void setAudioDataSource(Uri uri, Map<String, String> headers)
+    {
         mAudioUri = uri;
         mAudioHeaders = headers;
     }
 
-    public void setVideoDataSource(Uri uri, Map<String, String> headers) {
+    public void setVideoDataSource(Uri uri, Map<String, String> headers)
+    {
         mVideoUri = uri;
         mVideoHeaders = headers;
     }
 
-    private boolean prepareAudio() throws IOException {
-        for (int i = mAudioExtractor.getTrackCount(); i-- > 0;) {
+    private boolean prepareAudio() throws IOException
+    {
+        for (int i = mAudioExtractor.getTrackCount(); i-- > 0; ) {
             MediaFormat format = mAudioExtractor.getTrackFormat(i);
             String mime = format.getString(MediaFormat.KEY_MIME);
 
@@ -94,10 +101,10 @@ public class MediaCodecPlayer implements MediaTimeProvider {
             }
 
             Log.d(TAG, "audio track #" + i + " " + format + " " + mime +
-                  " Is ADTS:" + getMediaFormatInteger(format, MediaFormat.KEY_IS_ADTS) +
-                  " Sample rate:" + getMediaFormatInteger(format, MediaFormat.KEY_SAMPLE_RATE) +
-                  " Channel count:" +
-                  getMediaFormatInteger(format, MediaFormat.KEY_CHANNEL_COUNT));
+                    " Is ADTS:" + getMediaFormatInteger(format, MediaFormat.KEY_IS_ADTS) +
+                    " Sample rate:" + getMediaFormatInteger(format, MediaFormat.KEY_SAMPLE_RATE) +
+                    " Channel count:" +
+                    getMediaFormatInteger(format, MediaFormat.KEY_CHANNEL_COUNT));
 
             mAudioExtractor.selectTrack(i);
             if (!addTrack(i, format)) {
@@ -118,8 +125,9 @@ public class MediaCodecPlayer implements MediaTimeProvider {
         return true;
     }
 
-    private boolean prepareVideo() throws IOException {
-        for (int i = mVideoExtractor.getTrackCount(); i-- > 0;) {
+    private boolean prepareVideo() throws IOException
+    {
+        for (int i = mVideoExtractor.getTrackCount(); i-- > 0; ) {
             MediaFormat format = mVideoExtractor.getTrackFormat(i);
             String mime = format.getString(MediaFormat.KEY_MIME);
 
@@ -130,7 +138,7 @@ public class MediaCodecPlayer implements MediaTimeProvider {
             mMediaFormatHeight = getMediaFormatInteger(format, MediaFormat.KEY_HEIGHT);
             mMediaFormatWidth = getMediaFormatInteger(format, MediaFormat.KEY_WIDTH);
             Log.d(TAG, "video track #" + i + " " + format + " " + mime +
-                  " Width:" + mMediaFormatWidth + ", Height:" + mMediaFormatHeight);
+                    " Width:" + mMediaFormatWidth + ", Height:" + mMediaFormatHeight);
 
             mVideoExtractor.selectTrack(i);
             if (!addTrack(i, format)) {
@@ -151,7 +159,8 @@ public class MediaCodecPlayer implements MediaTimeProvider {
         return true;
     }
 
-    public boolean prepare() throws IOException {
+    public boolean prepare() throws IOException
+    {
         if (null == mAudioExtractor) {
             mAudioExtractor = new MediaExtractor();
             if (null == mAudioExtractor) {
@@ -160,7 +169,7 @@ public class MediaCodecPlayer implements MediaTimeProvider {
             }
         }
 
-        if (null == mVideoExtractor){
+        if (null == mVideoExtractor) {
             mVideoExtractor = new MediaExtractor();
             if (null == mVideoExtractor) {
                 Log.e(TAG, "prepare - Cannot create Video extractor.");
@@ -184,11 +193,11 @@ public class MediaCodecPlayer implements MediaTimeProvider {
         }
 
         if (!prepareAudio()) {
-            Log.e(TAG,"prepare - prepareAudio() failed!");
+            Log.e(TAG, "prepare - prepareAudio() failed!");
             return false;
         }
         if (!prepareVideo()) {
-            Log.e(TAG,"prepare - prepareVideo() failed!");
+            Log.e(TAG, "prepare - prepareVideo() failed!");
             return false;
         }
 
@@ -198,7 +207,8 @@ public class MediaCodecPlayer implements MediaTimeProvider {
         return true;
     }
 
-    private boolean addTrack(int trackIndex, MediaFormat format) throws IOException {
+    private boolean addTrack(int trackIndex, MediaFormat format) throws IOException
+    {
         String mime = format.getString(MediaFormat.KEY_MIME);
         boolean isVideo = mime.startsWith("video/");
         boolean isAudio = mime.startsWith("audio/");
@@ -206,8 +216,8 @@ public class MediaCodecPlayer implements MediaTimeProvider {
 
         codec = MediaCodec.createDecoderByType(mime);
         if (codec == null) {
-            Log.e(TAG, "addTrack - Could not create regular playback codec for mime "+
-                    mime+"!");
+            Log.e(TAG, "addTrack - Could not create regular playback codec for mime " +
+                    mime + "!");
             return false;
         }
         codec.configure(
@@ -216,12 +226,12 @@ public class MediaCodecPlayer implements MediaTimeProvider {
 
         CodecState state;
         if (isVideo) {
-            state = new CodecState((MediaTimeProvider)this, mVideoExtractor,
-                            trackIndex, format, codec, true);
+            state = new CodecState((MediaTimeProvider) this, mVideoExtractor,
+                    trackIndex, format, codec, true);
             mVideoCodecStates.put(Integer.valueOf(trackIndex), state);
         } else {
-            state = new CodecState((MediaTimeProvider)this, mAudioExtractor,
-                            trackIndex, format, codec, true);
+            state = new CodecState((MediaTimeProvider) this, mAudioExtractor,
+                    trackIndex, format, codec, true);
             mAudioCodecStates.put(Integer.valueOf(trackIndex), state);
         }
 
@@ -232,19 +242,21 @@ public class MediaCodecPlayer implements MediaTimeProvider {
         return true;
     }
 
-    protected int getMediaFormatInteger(MediaFormat format, String key) {
+    protected int getMediaFormatInteger(MediaFormat format, String key)
+    {
         return format.containsKey(key) ? format.getInteger(key) : 0;
     }
 
-    public boolean start() {
+    public void start()
+    {
         Log.d(TAG, "start");
 
         synchronized (mState) {
             if (mState == STATE_PLAYING || mState == STATE_PREPARING) {
-                return true;
+                return;
             } else if (mState == STATE_IDLE) {
                 mState = STATE_PREPARING;
-                return true;
+                return;
             } else if (mState != STATE_PAUSED) {
                 throw new IllegalStateException();
             }
@@ -260,10 +272,10 @@ public class MediaCodecPlayer implements MediaTimeProvider {
             mDeltaTimeUs = -1;
             mState = STATE_PLAYING;
         }
-        return false;
     }
 
-    public void startThread() {
+    public void startThread()
+    {
         mFrameReleaseTimeHelper.enable();
         start();
         synchronized (mThreadStarted) {
@@ -272,7 +284,8 @@ public class MediaCodecPlayer implements MediaTimeProvider {
         }
     }
 
-    public void pause() {
+    public void pause()
+    {
         Log.d(TAG, "pause");
 
         synchronized (mState) {
@@ -294,7 +307,8 @@ public class MediaCodecPlayer implements MediaTimeProvider {
         }
     }
 
-    public void flush() {
+    public void flush()
+    {
         Log.d(TAG, "flush");
 
         synchronized (mState) {
@@ -312,7 +326,8 @@ public class MediaCodecPlayer implements MediaTimeProvider {
         }
     }
 
-    public void reset() {
+    public void reset()
+    {
         synchronized (mState) {
             if (mState == STATE_PLAYING) {
                 pause();
@@ -359,23 +374,25 @@ public class MediaCodecPlayer implements MediaTimeProvider {
         }
     }
 
-    public boolean isEnded() {
+    public boolean isEnded()
+    {
         for (CodecState state : mVideoCodecStates.values()) {
-          if (!state.isEnded()) {
-            return false;
-          }
+            if (!state.isEnded()) {
+                return false;
+            }
         }
 
         for (CodecState state : mAudioCodecStates.values()) {
             if (!state.isEnded()) {
-              return false;
+                return false;
             }
         }
 
         return true;
     }
 
-    private void doSomeWork() {
+    private void doSomeWork()
+    {
         try {
             for (CodecState state : mVideoCodecStates.values()) {
                 state.doSomeWork();
@@ -394,7 +411,8 @@ public class MediaCodecPlayer implements MediaTimeProvider {
 
     }
 
-    public long getNowUs() {
+    public long getNowUs()
+    {
         //返回audio播放的时间
         if (mAudioTrackState == null) {
             return System.currentTimeMillis() * 1000;
@@ -403,7 +421,8 @@ public class MediaCodecPlayer implements MediaTimeProvider {
         return mAudioTrackState.getAudioTimeUs();
     }
 
-    public long getRealTimeUsForMediaTime(long mediaTimeUs) {
+    public long getRealTimeUsForMediaTime(long mediaTimeUs)
+    {
         if (mDeltaTimeUs == -1) {
             long nowUs = getNowUs();
             mDeltaTimeUs = nowUs - mediaTimeUs;
@@ -415,7 +434,8 @@ public class MediaCodecPlayer implements MediaTimeProvider {
         return adjustedReleaseTimeNs / 1000;
     }
 
-    public long getVsyncDurationNs() {
+    public long getVsyncDurationNs()
+    {
         if (mFrameReleaseTimeHelper != null) {
             return mFrameReleaseTimeHelper.getVsyncDurationNs();
         } else {
@@ -423,13 +443,15 @@ public class MediaCodecPlayer implements MediaTimeProvider {
         }
     }
 
-    public int getDuration() {
-        return (int)((mDurationUs + 500) / 1000);
+    public int getDuration()
+    {
+        return (int) ((mDurationUs + 500) / 1000);
     }
 
-    public int getCurrentPosition() {
+    public int getCurrentPosition()
+    {
         if (mVideoCodecStates == null) {
-                return 0;
+            return 0;
         }
 
         long positionUs = 0;
@@ -441,7 +463,7 @@ public class MediaCodecPlayer implements MediaTimeProvider {
                 positionUs = trackPositionUs;
             }
         }
-        return (int)((positionUs + 500) / 1000);
+        return (int) ((positionUs + 500) / 1000);
     }
 
 }

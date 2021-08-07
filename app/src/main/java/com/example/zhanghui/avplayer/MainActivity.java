@@ -19,7 +19,7 @@ public class MainActivity extends Activity {
 
     private Button mPlayButton;
     private EditText mUrlEditText;
-    private static final String DEFAULT_FILE_URL = "/sdcard/Sync-One2-Test-1080p-24-H_264_V.mp4";
+    private static final String DEFAULT_FILE_URL = "/sdcard/ts/mp4/Sync-One2-Test-1080p-24-H_264_V.mp4";
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);

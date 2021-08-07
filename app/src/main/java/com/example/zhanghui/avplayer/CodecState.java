@@ -25,6 +25,7 @@ public class CodecState {
     private LinkedList<Integer> mAvailableInputBufferIndices;
     private LinkedList<Integer> mAvailableOutputBufferIndices;
     private LinkedList<MediaCodec.BufferInfo> mAvailableOutputBufferInfos;
+    /** 上一帧音频时间戳 */
     private long mPresentationTimeUs;
     private long mSampleBaseTimeUs;
     private MediaCodec mCodec;

@@ -20,7 +20,8 @@ import java.util.concurrent.TimeUnit;
 public class PlayerActivity extends Activity implements SurfaceHolder.Callback{
 
     private static final String TAG = "PlayerActivity";
-    private MediaCodecPlayer mMediaCodecPlayer;
+//    private MediaCodecPlayer mMediaCodecPlayer;
+    private Player mMediaCodecPlayer;
     private SurfaceView mSurfaceV;
     private SurfaceHolder mSurfaceHolder;
     private MediaController mediaController;
@@ -40,9 +41,11 @@ public class PlayerActivity extends Activity implements SurfaceHolder.Callback{
         View root = findViewById(R.id.root);
         mediaController = new MediaController(this);
         mediaController.setAnchorView(root);
+
         root.setOnKeyListener(new View.OnKeyListener() {
             @Override
             public boolean onKey(View v, int keyCode, KeyEvent event) {
+                mediaController.show();
                 return mediaController.dispatchKeyEvent(event);
             }
         });
@@ -110,7 +113,11 @@ public class PlayerActivity extends Activity implements SurfaceHolder.Callback{
     }
 
     private void initializePlayer() {
-        mMediaCodecPlayer = new MediaCodecPlayer(mSurfaceHolder, getApplicationContext());
+//        mMediaCodecPlayer = new MediaCodecPlayer(mSurfaceHolder, getApplicationContext());
+        mMediaCodecPlayer = new Player(mSurfaceHolder, getApplicationContext());
+
+//        mediaController.setMediaPlayer(mMediaCodecPlayer);
+//        mediaController.setEnabled(true);
 
         mMediaCodecPlayer.setAudioDataSource(mFileUrl, null);
         mMediaCodecPlayer.setVideoDataSource(mFileUrl, null);
